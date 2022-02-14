@@ -16,9 +16,10 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class MainActivityViewModel : ViewModel() {
-    var isDataSaved = MutableLiveData<Boolean>()
+    var isDataSaved = MutableLiveData(false)
     var publicKey = ""
     var privateKey = ""
+    var selectedHero =MutableLiveData<SuperheroModel>()
 
     private lateinit var callback : Callback<Any?>
     fun onLoad(shDao: SuperheroDAO, superheroesSP: SuperheroesSP){
@@ -58,7 +59,7 @@ class MainActivityViewModel : ViewModel() {
                 SuperheroDB.databaseWritter.execute {
                     shDao.addOrUpdateSuperhero(retrievedHeroes)
                     superheroesSP.setSaved(superheroesSP.getSaved() + retrievedHeroes.size)
-                    isDataSaved.postValue(true)
+                    if (!isDataSaved.value!!)isDataSaved.postValue(true)
                     SuperheroesClient.service.getCharacters(
                         publicKey,
                         hash,
@@ -69,8 +70,13 @@ class MainActivityViewModel : ViewModel() {
             }
         }
         SuperheroDB.databaseWritter.execute {
-            SuperheroesClient.service.getCharacters(publicKey, hash, ts, superheroesSP.getSaved()).enqueue(callback)
+            val x = shDao.countSavedHeroes()
+            println(x)
+            if (x >= 10 ){
+                if (!isDataSaved.value!!)isDataSaved.postValue(true)
+            }
         }
+        SuperheroesClient.service.getCharacters(publicKey, hash, ts, superheroesSP.getSaved()).enqueue(callback)
 
     }
 

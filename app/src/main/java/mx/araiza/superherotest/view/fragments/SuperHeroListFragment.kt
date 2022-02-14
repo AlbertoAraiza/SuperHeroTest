@@ -6,20 +6,22 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import mx.araiza.superherotest.R
 import mx.araiza.superherotest.adapters.SuperheroRVA
 import mx.araiza.superherotest.databinding.FragmentSuperHeroListBinding
 import mx.araiza.superherotest.model.database.SuperheroDAO
 import mx.araiza.superherotest.model.database.SuperheroDB
-import mx.araiza.superherotest.viewmodel.SuperheroListViewModel
+import mx.araiza.superherotest.viewmodel.MainActivityViewModel
 
 class SuperHeroListFragment : Fragment() {
-    private val viewModel :SuperheroListViewModel by viewModels()
+    private val viewModel :MainActivityViewModel by activityViewModels()
     private lateinit var binding :FragmentSuperHeroListBinding
     private lateinit var superheroesAdapter : SuperheroRVA
     private lateinit var superheroDAO :SuperheroDAO
@@ -31,22 +33,22 @@ class SuperHeroListFragment : Fragment() {
         superheroDAO = SuperheroDB.getDatabase(requireContext()).getSuperheroDAO()
 
         superheroesAdapter = SuperheroRVA(ArrayList()){
-            val bundle = bundleOf("superhero" to it)
-            findNavController().navigate(R.id.action_superHeroListFragment_to_superheroDetailsFragment, bundle)
+            viewModel.selectedHero.postValue(it)
+            findNavController().navigate(R.id.action_superHeroListFragment_to_superheroDetailsFragment)
         }
 
-        superheroDAO.countSavedHeroes().observe(this){
+        viewModel.isDataSaved.observe(this){
             SuperheroDB.databaseWritter.execute {
                 val initRange = superheroesAdapter.itemCount
                 val newHeroes = superheroDAO.getRandomHeroes()
                 val endRange = newHeroes.size
 
                 superheroesAdapter.superheroList.addAll(newHeroes)
-                requireActivity().runOnUiThread { superheroesAdapter.notifyItemRangeInserted(initRange,endRange) }
+                GlobalScope.launch(Dispatchers.Main) {
+                    superheroesAdapter.notifyItemRangeInserted(initRange, endRange)
+                }
             }
         }
-
-
     }
 
     override fun onCreateView(
@@ -60,9 +62,6 @@ class SuperHeroListFragment : Fragment() {
         binding.rvSuperheroes.apply {
             layoutManager = gridLayoutManager
         }
-
-
-
         return binding.root
     }
 
@@ -80,7 +79,7 @@ class SuperHeroListFragment : Fragment() {
                     SuperheroDB.databaseWritter.execute{
                         val newHeroes = superheroDAO.getRandomHeroes()
                         superheroesAdapter.superheroList.addAll(newHeroes)
-                        requireActivity().runOnUiThread {
+                        GlobalScope.launch(Dispatchers.Main) {
                             superheroesAdapter.notifyDataSetChanged()
                             binding.pbLoading.visibility = View.GONE
                             isLoading = false

@@ -11,11 +11,6 @@ class Converters {
     fun arrayListFromString(value :String) :ArrayList<String>{
         val listType: Type = object : TypeToken<ArrayList<String?>?>() {}.type
         return Gson().fromJson(value, listType)
-//        val array = ArrayList<String>()
-//        Gson().toJsonTree(value).asJsonArray.forEach {
-//            array.add(it.asString)
-//        }
-//        return array
     }
 
     @TypeConverter

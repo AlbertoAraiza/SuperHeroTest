@@ -1,6 +1,5 @@
 package mx.araiza.superherotest.utils
 
-import android.app.Application
 import android.content.Context
 
 class SuperheroesSP(ctx :Context) {

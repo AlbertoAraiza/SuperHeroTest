@@ -10,7 +10,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
-import kotlin.text.Charsets.UTF_8
 
 class SuperheroesClient {
     companion object{

@@ -5,7 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface Services {
-    @GET("/v1/public/characters")//apikey={{public_key}}&hash={{hash}}&ts={{timestamp}}
+    @GET("/v1/public/characters")
     fun getCharacters(@Query("apikey") apikey :String,
                      @Query("hash") hash :String,
                      @Query("ts") timestamp:String,
